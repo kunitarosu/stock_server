@@ -1,5 +1,7 @@
 package jp.co.sample.highcharts.controller
 
+import java.net.URL
+
 import better.files._
 import io.finch.circe._
 import io.finch.{Endpoint, _}
@@ -11,19 +13,19 @@ import scala.io.Source
 
 object StockViewController {
 
-  val CSV_DIR = """/home/stock/workspace/stock_server/src/main/resources"""
+  val CSV_DIR = s"""${System.getProperty("user.home")}/workspace/stock_server/src/main/resources"""
 
   lazy val all = csvToJson :+: csvToHighchartsData
 
-  lazy val csvToJson: Endpoint[Seq[CandleStick]] = post("csvToJson" :: jsonBody[Map[String, String]]) { (map: Map[String, String]) =>
+  lazy val csvToJson: Endpoint[Seq[CandleStick]] = get("csvToJson" :: param("fileName")) { fileName: String =>
 
-    val filePath = file"$CSV_DIR/${map("fileName")}"
+    val filePath = file"$CSV_DIR/$fileName"
     Ok(CsvReader.read(filePath.path.toString))
   }
 
-  lazy val csvToHighchartsData: Endpoint[Seq[Seq[BigDecimal]]] = post("csvToHighchartsOHLC" :: jsonBody[Map[String, String]]) { (map: Map[String, String]) =>
+  lazy val csvToHighchartsData: Endpoint[Seq[Seq[BigDecimal]]] = get("csvToHighchartsOHLC" :: param("fileName")) { fileName: String =>
 
-    val filePath = file"$CSV_DIR/${map("fileName")}"
+    val filePath = file"$CSV_DIR/$fileName"
     val ohlcResults: Seq[Seq[BigDecimal]] = CsvReader.read(filePath.path.toString)
       .map(candleStick => Seq(
         BigDecimal(Mt4Converter.toTimeInMilles(candleStick.date, candleStick.time)),
