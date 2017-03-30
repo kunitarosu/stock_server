@@ -35,6 +35,6 @@ object StockViewController {
         BigDecimal(candleStick.close),
         BigDecimal(candleStick.volume)
       ))
-    Ok(ohlcResults)
+    Ok(ohlcResults).withHeader("Access-Control-Allow-Origin", "*")
   }
 }
